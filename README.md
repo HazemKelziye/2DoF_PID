@@ -10,6 +10,7 @@ As for the other DoF which is the PIDtheta controller it maintained the rocket t
 point i.e. (0,-1) and if it's not above that point it will be tilt the rocket to make it move towards the target point,
 the setpoint was {pi/4 * (x + Vx)}.
 
+For more clear demonstrations please refer to this link => https://youtu.be/mLsDPvBsJDQ
 
 
 
