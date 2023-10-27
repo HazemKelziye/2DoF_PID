@@ -6,75 +6,85 @@ Created on Tue Oct 26 09:34:00 2023
 
 # import gym
 import gym.spaces
-import time
 import numpy as np
 import rocket_lander_gym
 from pidcontroller import *
 import math
 import matplotlib.pyplot as plt
+import json
 
+EPISODES_NUMBER = 101
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
-
-env = gym.make('RocketLander-v0')
-env.reset()
-
-MISSION_ACCOMPLISHED = False
-PRINT_DEBUG_MSG = True
+# ep_counter = 1
+results = []
+episodes = {}
+largest_reward = 0  # Dummy var for checking whether we landed successfully or not
 
 # For storing the state-action pairs
 sa_pairs = []
 
-ACTION_X = 0  # Setting the throttle's gimbal DoF to 0 permanently
+ACTION_X = 0  # !Setting the throttle's gimbal DoF to 0 permanently!
 action_y = 0
 action_theta = 0
 
 # Initializing the state-space's lists
 x_pos_data, y_pos_data, orient_data, vx_data, vy_data, omega_data = [], [], [], [], [], []
 
-action_set = env.action_space.sample()
-observation, _, done, _ = env.step(action_set)
-
 # Initialization for our PID controllers with their Gains
-y_controller = PIDy(15000, 0, 5000, SETPOINTS[1])
+y_controller = PIDy(15000, 10, 5000, SETPOINTS[1])
 theta_controller = PIDtheta(1000, 2.5, 750, SETPOINTS[2])
 
-while True:
-    env.render()
-    observation, success, done, _ = env.step(action_set)
+env = gym.make('RocketLander-v0')
 
-    # Appending the state variables
-    x_pos_data.append(observation[0])
-    y_pos_data.append(observation[1])
-    orient_data.append(observation[2])
-    vx_data.append(observation[7])
-    vy_data.append(observation[8])
-    omega_data.append(observation[9])
+for ep_counter in range(1, EPISODES_NUMBER):
+    env.reset()
 
-    # Taking actions w.r.t. the PID controller's feedback
-    # If one of the legs contacts the ground i.e. MISSION_ACCOMPLISHED==1 set action_y = 0 (kill off throttle engine)
-    action_y = np.clip(y_controller.update(
-        [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1, 1)
+    action_set = env.action_space.sample()
+    observation, _, done, _ = env.step(action_set)
 
-    action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
-                                           (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
+    while True:
+        env.render()
+        observation, reward, done, _ = env.step(action_set)
 
-    action_set = np.array([ACTION_X, action_y, action_theta])
+        # Appending the state variables
+        x_pos_data.append(observation[0])
+        y_pos_data.append(observation[1])
+        orient_data.append(observation[2])
+        vx_data.append(observation[7])
+        vy_data.append(observation[8])
+        omega_data.append(observation[9])
 
-    sa_pairs.append([list(observation), list(action_set)])  # Adding the (s,a) pairs
+        # Taking actions w.r.t. the PID controller's feedback
+        # If one of the legs contacts the ground i.e. MISSION_ACCOMPLISHED==1 set action_y = 0 (kill off throttle engine)
+        action_y = np.clip(y_controller.update(
+            [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1, 1)
 
-    time.sleep(0.001)  # For controlling FPS during demonstration
+        action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
+                                                       (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
 
-    # For debugging purposes
-    if PRINT_DEBUG_MSG:
-        print("Action Taken  ", action_set[1:])  # Shows the action-space i.e. throttle and thruster (NO Gimbal!)
-        print("Observation ", observation)
+        action_set = np.array([ACTION_X, action_y, action_theta])
+        sa_pairs.append([list(observation), list(action_set)])  # Adding the (s,a) pairs
 
-    if done:
-        print("Simulation done.", success)
-        break
+        # Making a scheme for learning whether the landing was successful or not
+        largest_reward = reward if reward > largest_reward else largest_reward
 
-env.close()
+        if done:
+            print("Simulation done.")
 
+            # Deciding whether the landing was successful or not
+            success = True if largest_reward >= 0.05 else False
+
+            # Making a dictionary to store the episodic Dataset in a JSON file
+            episodes[f"episode{ep_counter}"] = {
+                    "SA_pairs": sa_pairs,
+                    "success": success,
+                }
+            break
+
+    env.close()
+    # Inspection of the success rate
+    print("Success?", success)
+    results.append(success)
 
 # Function for plotting the response of the system
 def plot_response():
@@ -92,4 +102,5 @@ def plot_response():
     plt.xlabel('Steps')
     plt.show()
 
-plot_response()  # Plotting the response of the system
+
+# plot_response()  # Plotting the response of the system

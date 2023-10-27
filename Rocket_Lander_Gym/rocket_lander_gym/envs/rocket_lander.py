@@ -45,11 +45,11 @@ Continuous control inputs are:
 CONTINUOUS = True
 VEL_STATE = True  # Add velocity info to state
 FPS = 60
-SCALE_S = 0.35  # Temporal Scaling, lower is faster - adjust forces appropriately
+SCALE_S = 0.30  # Temporal Scaling, lower is faster - adjust forces appropriately
 INITIAL_RANDOM = 0.40  # Random scaling of initial velocity, higher is more difficult
 
-START_HEIGHT = 1500.0
-START_SPEED = 90.0
+START_HEIGHT = 1200.0
+START_SPEED = 60.0
 
 # ROCKET
 MIN_THROTTLE = 0.4
