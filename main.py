@@ -13,10 +13,9 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 101
+EPISODES_NUMBER = 1
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 # ep_counter = 1
-results = []
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
 
@@ -36,7 +35,7 @@ theta_controller = PIDtheta(1000, 2.5, 750, SETPOINTS[2])
 
 env = gym.make('RocketLander-v0')
 
-for ep_counter in range(1, EPISODES_NUMBER):
+for ep_counter in range(1, EPISODES_NUMBER + 1):
     env.reset()
 
     action_set = env.action_space.sample()
@@ -63,7 +62,10 @@ for ep_counter in range(1, EPISODES_NUMBER):
                                                        (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
 
         action_set = np.array([ACTION_X, action_y, action_theta])
-        sa_pairs.append([list(observation), list(action_set)])  # Adding the (s,a) pairs
+
+        # Adding the S-A pairs, the state-space's dimension is 9 and the action-space's dimension is 2
+        sa_pairs.append([list(observation)[:6] + list(observation[7:]), list(action_set)[1:]])  # Adding the (s,a) pairs
+
 
         # Making a scheme for learning whether the landing was successful or not
         largest_reward = reward if reward > largest_reward else largest_reward
@@ -76,15 +78,17 @@ for ep_counter in range(1, EPISODES_NUMBER):
 
             # Making a dictionary to store the episodic Dataset in a JSON file
             episodes[f"episode{ep_counter}"] = {
-                    "SA_pairs": sa_pairs,
-                    "success": success,
-                }
+                "SA_pairs": sa_pairs,
+                "success": success,
+            }
             break
 
     env.close()
-    # Inspection of the success rate
-    print("Success?", success)
-    results.append(success)
+
+# json_object = json.dumps(episodes)
+# with open("episodes9.json", "w") as outfile:
+#     outfile.write(json_object)
+
 
 # Function for plotting the response of the system
 def plot_response():
@@ -102,5 +106,4 @@ def plot_response():
     plt.xlabel('Steps')
     plt.show()
 
-
-# plot_response()  # Plotting the response of the system
+plot_response()  # Plotting the response of the system
