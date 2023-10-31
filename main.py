@@ -3,7 +3,6 @@ Created on Tue Oct 26 09:34:00 2023
 
 @author: Hazem
 """
-
 # import gym
 import gym.spaces
 import numpy as np
@@ -13,12 +12,13 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 1
+EPISODES_NUMBER = 5
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 # ep_counter = 1
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
 
+resulting_pattern = []  # add the 3 state 1 action pairs
 # For storing the state-action pairs
 sa_pairs = []
 
@@ -91,32 +91,26 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
             success = True if largest_reward >= 0.1 else False
             print(f"Simulation {ep_counter} done : {success}.")
             # Making a dictionary to store the episodic Dataset in a JSON file
+            for t in range(len(sa_pairs) - 2):
+                state_0, action_0 = sa_pairs[t]
+                state_1, action_1 = sa_pairs[t + 1]
+                state_2, action_2 = sa_pairs[t + 2]
+
+                sub_pattern = [state_0 + state_1 + state_2, action_2]
+                resulting_pattern.append(sub_pattern)
+
             episodes[f"episode{ep_counter}"] = {
-                "SA_pairs": sa_pairs,
+                "SA_pairs": resulting_pattern,
                 "success": success,
             }
+
             break
 
     env.close()
 
-print(sa_pairs)
-
-resulting_pattern = []
-
-for t in range(len(sa_pairs) - 2):
-    state_0, action_0 = sa_pairs[t]
-    state_1, action_1 = sa_pairs[t+1]
-    state_2, action_2 = sa_pairs[t+2]
-
-    sub_pattern = [state_0 + state_1 + state_2, action_2]
-    resulting_pattern.append(sub_pattern)
-
-print(resulting_pattern)
-
-
-# json_object = json.dumps(episodes)
-# with open("episodes.json", "w") as outfile:
-#     outfile.write(json_object)
+json_object = json.dumps(episodes)
+with open("episodes.json", "w") as outfile:
+    outfile.write(json_object)
 
 
 # Function for plotting the response of the system
