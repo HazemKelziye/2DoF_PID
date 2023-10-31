@@ -12,21 +12,21 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 5
+EPISODES_NUMBER = 10
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
-# ep_counter = 1
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
 
 resulting_pattern = []  # add the 3 state 1 action pairs
-# For storing the state-action pairs
-sa_pairs = []
+dataset = []  # aggregate the 3s,1a pairs
+
+sa_pairs = []  # For storing the state-action pairs
 
 ACTION_X = 0  # !Setting the throttle's gimbal DoF to 0 permanently!
 action_y = 0
 action_theta = 0
 
-# Initializing the state-space's lists
+# Initialize the state-space's lists
 x_pos_data, y_pos_data, orient_data, vx_data, vy_data, omega_data = [], [], [], [], [], []
 
 # Initialization for our PID controllers with their Gains
@@ -88,7 +88,7 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
 
         if done:
             # Deciding whether the landing was successful or not
-            success = True if largest_reward >= 0.1 else False
+            success = True if largest_reward >= 0.05 else False
             print(f"Simulation {ep_counter} done : {success}.")
             # Making a dictionary to store the episodic Dataset in a JSON file
             for t in range(len(sa_pairs) - 2):
@@ -99,18 +99,15 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
                 sub_pattern = [state_0 + state_1 + state_2, action_2]
                 resulting_pattern.append(sub_pattern)
 
-            episodes[f"episode{ep_counter}"] = {
-                "SA_pairs": resulting_pattern,
-                "success": success,
-            }
+            dataset += resulting_pattern
 
             break
 
     env.close()
 
-json_object = json.dumps(episodes)
-with open("episodes.json", "w") as outfile:
-    outfile.write(json_object)
+# json_object = json.dumps(dataset)
+# with open("episodes.json", "w") as outfile:
+#     outfile.write(json_object)
 
 
 # Function for plotting the response of the system
