@@ -13,7 +13,7 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 10
+EPISODES_NUMBER = 1
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 # ep_counter = 1
 episodes = {}
@@ -43,7 +43,6 @@ def discretize_actions(action):
     max_val = 1.0
     # bin_width = (max_val - min_val) / bins_num
     intervals = np.linspace(min_val, max_val, bins_num + 1)
-    print(intervals)
 
     for i in range(bins_num):
         if action < intervals[i + 1]:
@@ -99,6 +98,20 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
             break
 
     env.close()
+
+print(sa_pairs)
+
+resulting_pattern = []
+
+for t in range(len(sa_pairs) - 2):
+    state_0, action_0 = sa_pairs[t]
+    state_1, action_1 = sa_pairs[t+1]
+    state_2, action_2 = sa_pairs[t+2]
+
+    sub_pattern = [state_0 + state_1 + state_2, action_2]
+    resulting_pattern.append(sub_pattern)
+
+print(resulting_pattern)
 
 
 # json_object = json.dumps(episodes)
