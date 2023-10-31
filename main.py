@@ -35,6 +35,23 @@ theta_controller = PIDtheta(1000, 2.5, 750, SETPOINTS[2])
 
 env = gym.make('RocketLander-v0')
 
+
+def discretize_actions(action):
+    """discretize given action, according to specified bins_num"""
+    bins_num = 5
+    min_val = -1.0
+    max_val = 1.0
+    # bin_width = (max_val - min_val) / bins_num
+    intervals = np.linspace(min_val, max_val, bins_num + 1)
+    print(intervals)
+
+    for i in range(bins_num):
+        if action < intervals[i + 1]:
+            return intervals[i]
+
+    return intervals[-1] if action >= intervals[-1] else None
+
+
 for ep_counter in range(1, EPISODES_NUMBER + 1):
     env.reset()
 
@@ -61,7 +78,8 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
         action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
                                                        (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
 
-        action_set = np.array([ACTION_X, action_y, action_theta])
+        # Discretizing the input actions y and theta
+        action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
 
         # Adding the S-A pairs, the state-space's dimension is 9 and the action-space's dimension is 2
         sa_pairs.append([list(observation)[:6] + list(observation[7:]), list(action_set)[1:]])  # Adding the (s,a) pairs
