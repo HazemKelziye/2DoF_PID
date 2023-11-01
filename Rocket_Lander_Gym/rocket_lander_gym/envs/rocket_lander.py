@@ -224,7 +224,7 @@ class RocketLander(gym.Env):
         self.ship.color1 = (0.2, 0.2, 0.2)
 
         # Starting x-position is parameterized with the viewport ratio (W)
-        initial_x = W / 2 + W * np.random.uniform(-0.45, 0.45)
+        initial_x = W / 2 + W * np.random.uniform(-0.40, 0.40)
         initial_y = H * 0.95
         self.lander = self.world.CreateDynamicBody(
             position=(initial_x, initial_y),
