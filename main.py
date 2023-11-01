@@ -3,8 +3,6 @@ Created on Tue Oct 26 09:34:00 2023
 
 @author: Hazem
 """
-
-# import gym
 import gym.spaces
 import numpy as np
 import rocket_lander_gym
@@ -74,18 +72,16 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
             success = True if largest_reward >= 0.1 else False
             print(f"Simulation {ep_counter} done : {success}.")
             # Making a dictionary to store the episodic Dataset in a JSON file
-            episodes[f"episode{ep_counter}"] = {
-                "SA_pairs": sa_pairs,
-                "success": success,
-            }
+            episodes[f"episode{ep_counter}"] = sa_pairs
+
             break
 
     env.close()
 
 
-# json_object = json.dumps(episodes)
-# with open("episodes.json", "w") as outfile:
-#     outfile.write(json_object)
+json_object = json.dumps(episodes)
+with open("episodes.json", "w") as outfile:
+    outfile.write(json_object)
 
 
 # Function for plotting the response of the system
