@@ -12,7 +12,7 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 50
+EPISODES_NUMBER = 1
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
@@ -75,7 +75,8 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
             [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1.0, 1.0)
 
         action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
-                                                       (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
+                                                       (math.pi / 4) * (observation[0] + observation[7])),
+                               -1, 1) if largest_reward <= 0 else 0
 
         # Discretizing the input actions y and theta
         action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
