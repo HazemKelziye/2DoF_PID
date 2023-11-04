@@ -12,7 +12,7 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 1
+EPISODES_NUMBER = 1000
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
@@ -75,20 +75,17 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
             [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1.0, 1.0)
 
         action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
-                                                       (math.pi / 4) * (observation[0] + observation[7])),
-                               -1, 1) if largest_reward <= 0 else 0
+                                                       (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
 
         # Discretizing the input actions y and theta
         action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
 
         # Adding the S-A pairs, the state-space's dimension is 5 and the action-space's dimension is 1
-
         sa_pairs.append([[list(observation)[0]
-                         , list(observation)[1]
-                         , list(observation)[2]
-                         , list(observation)[7]
-                         , list(observation)[8]], list(action_set)[1:]])  # Adding the (s,a) pairs
-
+                             , list(observation)[1]
+                             , list(observation)[2]
+                             , list(observation)[7]
+                             , list(observation)[8]], list(action_set)[1:]])  # Adding the (s,a) pairs
 
         # Making a scheme for learning whether the landing was successful or not
         largest_reward = reward if reward > largest_reward else largest_reward
@@ -97,27 +94,18 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
             # Deciding whether the landing was successful or not
             success = True if largest_reward >= 0.05 else False
             print(f"Simulation {ep_counter} done : {success}.")
-            # # Making a dictionary to store the episodic Dataset in a JSON file
-            # for t in range(len(sa_pairs) - 2):
-            #     state_0, action_0 = sa_pairs[t]
-            #     state_1, action_1 = sa_pairs[t + 1]
-            #     state_2, action_2 = sa_pairs[t + 2]
-            #
-            #     sub_pattern = [state_0 + state_1 + state_2, action_2]
-            #     resulting_pattern.append(sub_pattern)
-            #
-            # dataset += resulting_pattern
 
-            resulting_pattern.extend(sa_pairs)
+            episodes[f"episode{ep_counter}"] = sa_pairs
+            sa_pairs = []  # empty the list to store the s,a pairs of the next episode
 
             break
 
     env.close()
 
 # print(sa_pairs)
-# json_object = json.dumps(resulting_pattern)
-# with open("new_50_episodes2.json", "w") as outfile:
-#     outfile.write(json_object)
+json_object = json.dumps(episodes)
+with open("episodes_v4_5.json", "w") as outfile:
+    outfile.write(json_object)
 
 
 # Function for plotting the response of the system
