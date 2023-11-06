@@ -12,7 +12,7 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 1000
+EPISODES_NUMBER = 5
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
@@ -38,14 +38,14 @@ env = gym.make('RocketLander-v0')
 
 def discretize_actions(action):
     """discretize given action, according to specified bins_num"""
-    bins_num = 5
+    bins_num = 6
     min_val = -1.0
     max_val = 1.0
     # bin_width = (max_val - min_val) / bins_num
-    intervals = np.linspace(min_val, max_val, bins_num + 1)
+    intervals = np.linspace(min_val, max_val, bins_num)
 
     for i in range(bins_num):
-        if action < intervals[i + 1]:
+        if action <= intervals[i]:
             return intervals[i]
 
     return intervals[-1] if action >= intervals[-1] else None
@@ -103,9 +103,9 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
     env.close()
 
 # print(sa_pairs)
-json_object = json.dumps(episodes)
-with open("episodes_v4_5.json", "w") as outfile:
-    outfile.write(json_object)
+# json_object = json.dumps(episodes)
+# with open("episodes_v4_5.json", "w") as outfile:
+#     outfile.write(json_object)
 
 
 # Function for plotting the response of the system
