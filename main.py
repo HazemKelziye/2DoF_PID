@@ -3,6 +3,7 @@ Created on Tue Oct 26 09:34:00 2023
 
 @author: Hazem
 """
+# import gym
 import gym.spaces
 import numpy as np
 import rocket_lander_gym
@@ -11,20 +12,21 @@ import math
 import matplotlib.pyplot as plt
 import json
 
-EPISODES_NUMBER = 10
+EPISODES_NUMBER = 5
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
-# ep_counter = 1
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
 
-# For storing the state-action pairs
-sa_pairs = []
+resulting_pattern = []  # add the 3 state 1 action pairs
+dataset = []  # aggregate the 3s,1a pairs
+
+sa_pairs = []  # For storing the state-action pairs
 
 ACTION_X = 0  # !Setting the throttle's gimbal DoF to 0 permanently!
 action_y = 0
 action_theta = 0
 
-# Initializing the state-space's lists
+# Initialize the state-space's lists
 x_pos_data, y_pos_data, orient_data, vx_data, vy_data, omega_data = [], [], [], [], [], []
 
 # Initialization for our PID controllers with their Gains
@@ -32,6 +34,22 @@ y_controller = PIDy(15000, 10, 5000, SETPOINTS[1])
 theta_controller = PIDtheta(1000, 2.5, 750, SETPOINTS[2])
 
 env = gym.make('RocketLander-v0')
+
+
+def discretize_actions(action):
+    """discretize given action, according to specified bins_num"""
+    bins_num = 6
+    min_val = -1.0
+    max_val = 1.0
+    # bin_width = (max_val - min_val) / bins_num
+    intervals = np.linspace(min_val, max_val, bins_num)
+
+    for i in range(bins_num):
+        if action <= intervals[i]:
+            return intervals[i]
+
+    return intervals[-1] if action >= intervals[-1] else None
+
 
 for ep_counter in range(1, EPISODES_NUMBER + 1):
     env.reset()
@@ -54,34 +72,40 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
         # Taking actions w.r.t. the PID controller's feedback, If one of the legs contacts the ground i.e.
         # MISSION_ACCOMPLISHED==1 set action_y = 0 (kill off throttle engine)
         action_y = np.clip(y_controller.update(
-            [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1, 1)
+            [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1.0, 1.0)
 
         action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
                                                        (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
 
-        action_set = np.array([ACTION_X, action_y, action_theta])
+        # Discretizing the input actions y and theta
+        action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
 
-        # Adding the S-A pairs, the state-space's dimension is 9 and the action-space's dimension is 2
-        sa_pairs.append([list(observation)[:6] + list(observation[7:]), list(action_set)[1:]])  # Adding the (s,a) pairs
+        # Adding the S-A pairs, the state-space's dimension is 5 and the action-space's dimension is 1
+        sa_pairs.append([[list(observation)[0]
+                             , list(observation)[1]
+                             , list(observation)[2]
+                             , list(observation)[7]
+                             , list(observation)[8]], list(action_set)[1:]])  # Adding the (s,a) pairs
 
         # Making a scheme for learning whether the landing was successful or not
         largest_reward = reward if reward > largest_reward else largest_reward
-
         if done:
             # Deciding whether the landing was successful or not
-            success = True if largest_reward >= 0.1 else False
+            success = True if largest_reward >= 0.05 else False
             print(f"Simulation {ep_counter} done : {success}.")
-            # Making a dictionary to store the episodic Dataset in a JSON file
+
             episodes[f"episode{ep_counter}"] = sa_pairs
+            sa_pairs = []  # empty the list to store the s,a pairs of the next episode
 
             break
 
     env.close()
 
 
-json_object = json.dumps(episodes)
-with open("episodes.json", "w") as outfile:
-    outfile.write(json_object)
+# print(sa_pairs)
+# json_object = json.dumps(episodes)
+# with open("episodes_v4_5.json", "w") as outfile:
+#     outfile.write(json_object)
 
 
 # Function for plotting the response of the system
