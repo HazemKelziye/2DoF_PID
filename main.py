@@ -89,7 +89,6 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
 
         # Making a scheme for learning whether the landing was successful or not
         largest_reward = reward if reward > largest_reward else largest_reward
-
         if done:
             # Deciding whether the landing was successful or not
             success = True if largest_reward >= 0.05 else False
