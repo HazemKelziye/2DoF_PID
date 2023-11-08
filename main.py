@@ -11,6 +11,7 @@ from pidcontroller import *
 import math
 import matplotlib.pyplot as plt
 import json
+import torch
 
 EPISODES_NUMBER = 5
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
@@ -23,7 +24,7 @@ dataset = []  # aggregate the 3s,1a pairs
 sa_pairs = []  # For storing the state-action pairs
 
 ACTION_X = 0  # !Setting the throttle's gimbal DoF to 0 permanently!
-action_y = 0
+action_y = -0.1
 action_theta = 0
 
 # Initialize the state-space's lists
