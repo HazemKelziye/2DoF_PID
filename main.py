@@ -103,12 +103,6 @@ for ep_counter in range(1, EPISODES_NUMBER + 1):
     env.close()
 
 
-# print(sa_pairs)
-# json_object = json.dumps(episodes)
-# with open("episodes_v4_5.json", "w") as outfile:
-#     outfile.write(json_object)
-
-
 # Function for plotting the response of the system
 def plot_response():
     plt.plot(x_pos_data, label="x")
