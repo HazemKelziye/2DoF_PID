@@ -12,14 +12,11 @@ def discretize_actions(action, bins_num=6, min_val=-1.0, max_val=1.0):
     return intervals[np.digitize(action, intervals) - 1]  # digitize returns the index of action in intervals
 
 
-def plot_response(*args):
+def plot_response(data):
     """plot the responses of the rocket while landing"""
-    plt.plot(args[0], label="x")
-    plt.plot(args[1], label="y")
-    plt.plot(args[2], label="theta")
-    plt.plot(args[3], label="vx")
-    plt.plot(args[4], label="vy")
-    plt.plot(args[5], label="omega")
+    plt.figure(figsize=(12, 6))
+    for key, value in data.items():
+        plt.plot(value, label=key)
     plt.legend()
     plt.grid()
     plt.ylim(-1.1, 1.1)
@@ -38,7 +35,7 @@ action_theta = 0
 
 # Initialize the state-space's lists for plotting
 x_pos_data, y_pos_data, orient_data, vx_data, vy_data, omega_data = [], [], [], [], [], []
-
+data = {'x': [], 'y': [], 'theta': [], 'vx': [], 'vy': [], 'omega': []}
 # Initialization for our PID controllers with their Gains
 y_controller = PIDy(15000, 10, 5000, SETPOINTS[1])
 theta_controller = PIDtheta(1000, 2.5, 750, SETPOINTS[2])
@@ -53,12 +50,12 @@ while True:
     observation, reward, done, _ = env.step(action_set)
 
     # append state variables for plotting
-    x_pos_data.append(observation[0])
-    y_pos_data.append(observation[1])
-    orient_data.append(observation[2])
-    vx_data.append(observation[7])
-    vy_data.append(observation[8])
-    omega_data.append(observation[9])
+    data['x'].append(observation[0])
+    data['y'].append(observation[1])
+    data['theta'].append(observation[2])
+    data['vx'].append(observation[7])
+    data['vy'].append(observation[8])
+    data['omega'].append(observation[9])
 
     # update the action values using the PID's feedback update
     action_y = np.clip(y_controller.update(
@@ -80,4 +77,4 @@ while True:
 
 env.close()
 
-plot_response(x_pos_data, y_pos_data, orient_data, vx_data, vy_data, omega_data)  # Plotting the response of the system
+plot_response(data)  # Plotting the response of the system
