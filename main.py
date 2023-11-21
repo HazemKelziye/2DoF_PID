@@ -6,19 +6,10 @@ import math
 import matplotlib.pyplot as plt
 
 
-def discretize_actions(action):
-    """discretize given action, according to specified bins_num"""
-    bins_num = 6
-    min_val = -1.0
-    max_val = 1.0
-    # bin_width = (max_val - min_val) / bins_num
+def discretize_actions(action, bins_num=6, min_val=-1.0, max_val=1.0):
+    """Discretize action into one of the specified bins."""
     intervals = np.linspace(min_val, max_val, bins_num)
-
-    for i in range(bins_num):
-        if action <= intervals[i]:
-            return intervals[i]
-
-    return intervals[-1] if action >= intervals[-1] else None
+    return intervals[np.digitize(action, intervals) - 1]  # digitize returns the index of action in intervals
 
 
 def plot_response(*args):

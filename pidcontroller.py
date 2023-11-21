@@ -3,9 +3,7 @@ class PIDController:
         as a parent, it'll create two degrees-of-freedom PID controller"""
 
     def __init__(self, kp, ki, kd, setpoint):
-        self.kp = kp
-        self.ki = ki
-        self.kd = kd
+        self.kp, self.ki, self.kd = kp, ki, kd
         self.setpoint = setpoint
         self.error_integral = 0
         self.error_derivative = 0
