@@ -15,7 +15,7 @@ import torch
 
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 episodes = {}
-largest_reward = 0  # Dummy var for checking whether we landed successfully or not
+largest_reward = 0  # Dummy variable for checking whether we landed successfully or not
 
 resulting_pattern = []  # add the 3 state 1 action pairs
 dataset = []  # aggregate the 3s,1a pairs
@@ -54,7 +54,6 @@ def discretize_actions(action):
 env.reset()
 
 action_set = env.action_space.sample()
-observation, _, done, _ = env.step(action_set)
 
 while True:
     env.render()
@@ -79,21 +78,12 @@ while True:
     # Discretizing the input actions y and theta
     action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
 
-    # Adding the S-A pairs, the state-space's dimension is 5 and the action-space's dimension is 1
-    sa_pairs.append([[list(observation)[0]
-                         , list(observation)[1]
-                         , list(observation)[2]
-                         , list(observation)[7]
-                         , list(observation)[8]], list(action_set)[1:]])  # Adding the (s,a) pairs
-
     # Making a scheme for learning whether the landing was successful or not
     largest_reward = reward if reward > largest_reward else largest_reward
     if done:
         # Deciding whether the landing was successful or not
         success = True if largest_reward >= 0.05 else False
         print(f"Simulation is done : {success}.")
-
-
 
         break
 
