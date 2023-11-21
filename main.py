@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import json
 import torch
 
-EPISODES_NUMBER = 5
 SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID controller
 episodes = {}
 largest_reward = 0  # Dummy var for checking whether we landed successfully or not
@@ -52,55 +51,53 @@ def discretize_actions(action):
     return intervals[-1] if action >= intervals[-1] else None
 
 
-for ep_counter in range(1, EPISODES_NUMBER + 1):
-    env.reset()
+env.reset()
 
-    action_set = env.action_space.sample()
-    observation, _, done, _ = env.step(action_set)
+action_set = env.action_space.sample()
+observation, _, done, _ = env.step(action_set)
 
-    while True:
-        env.render()
-        observation, reward, done, _ = env.step(action_set)
+while True:
+    env.render()
+    observation, reward, done, _ = env.step(action_set)
 
-        # Appending the state variables
-        x_pos_data.append(observation[0])
-        y_pos_data.append(observation[1])
-        orient_data.append(observation[2])
-        vx_data.append(observation[7])
-        vy_data.append(observation[8])
-        omega_data.append(observation[9])
+    # Appending the state variables
+    x_pos_data.append(observation[0])
+    y_pos_data.append(observation[1])
+    orient_data.append(observation[2])
+    vx_data.append(observation[7])
+    vy_data.append(observation[8])
+    omega_data.append(observation[9])
 
-        # Taking actions w.r.t. the PID controller's feedback, If one of the legs contacts the ground i.e.
-        # MISSION_ACCOMPLISHED==1 set action_y = 0 (kill off throttle engine)
-        action_y = np.clip(y_controller.update(
-            [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1.0, 1.0)
+    # Taking actions w.r.t. the PID controller's feedback, If one of the legs contacts the ground i.e.
+    # MISSION_ACCOMPLISHED==1 set action_y = 0 (kill off throttle engine)
+    action_y = np.clip(y_controller.update(
+        [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1.0, 1.0)
 
-        action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
-                                                       (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
+    action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
+                                                   (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
 
-        # Discretizing the input actions y and theta
-        action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
+    # Discretizing the input actions y and theta
+    action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
 
-        # Adding the S-A pairs, the state-space's dimension is 5 and the action-space's dimension is 1
-        sa_pairs.append([[list(observation)[0]
-                             , list(observation)[1]
-                             , list(observation)[2]
-                             , list(observation)[7]
-                             , list(observation)[8]], list(action_set)[1:]])  # Adding the (s,a) pairs
+    # Adding the S-A pairs, the state-space's dimension is 5 and the action-space's dimension is 1
+    sa_pairs.append([[list(observation)[0]
+                         , list(observation)[1]
+                         , list(observation)[2]
+                         , list(observation)[7]
+                         , list(observation)[8]], list(action_set)[1:]])  # Adding the (s,a) pairs
 
-        # Making a scheme for learning whether the landing was successful or not
-        largest_reward = reward if reward > largest_reward else largest_reward
-        if done:
-            # Deciding whether the landing was successful or not
-            success = True if largest_reward >= 0.05 else False
-            print(f"Simulation {ep_counter} done : {success}.")
+    # Making a scheme for learning whether the landing was successful or not
+    largest_reward = reward if reward > largest_reward else largest_reward
+    if done:
+        # Deciding whether the landing was successful or not
+        success = True if largest_reward >= 0.05 else False
+        print(f"Simulation is done : {success}.")
 
-            episodes[f"episode{ep_counter}"] = sa_pairs
-            sa_pairs = []  # empty the list to store the s,a pairs of the next episode
 
-            break
 
-    env.close()
+        break
+
+env.close()
 
 
 # Function for plotting the response of the system
