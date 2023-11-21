@@ -1,4 +1,3 @@
-# import gym
 import gym.spaces
 import numpy as np
 import rocket_lander_gym
@@ -22,8 +21,8 @@ def discretize_actions(action):
     return intervals[-1] if action >= intervals[-1] else None
 
 
-# Function for plotting the response of the system
 def plot_response(*args):
+    """plot the responses of the rocket while landing"""
     plt.plot(args[0], label="x")
     plt.plot(args[1], label="y")
     plt.plot(args[2], label="theta")
@@ -43,10 +42,10 @@ SETPOINTS = [0, -1.05, 0]  # Setpoints/desired-points for optimizing the PID con
 largest_reward = 0  # Dummy variable for checking whether we landed successfully or not
 
 ACTION_X = 0  # !Setting the throttle's gimbal DoF to 0 permanently!
-action_y = -0.1
+action_y = -0.2
 action_theta = 0
 
-# Initialize the state-space's lists
+# Initialize the state-space's lists for plotting
 x_pos_data, y_pos_data, orient_data, vx_data, vy_data, omega_data = [], [], [], [], [], []
 
 # Initialization for our PID controllers with their Gains
@@ -70,15 +69,14 @@ while True:
     vy_data.append(observation[8])
     omega_data.append(observation[9])
 
-    # Taking actions w.r.t. the PID controller's feedback, If one of the legs contacts the ground i.e.
-    # MISSION_ACCOMPLISHED==1 set action_y = 0 (kill off throttle engine)
+    # update the action values using the PID's feedback update
     action_y = np.clip(y_controller.update(
         [observation[1], observation[8]], abs(observation[0]) + SETPOINTS[1]), -1.0, 1.0)
 
     action_theta = np.clip(theta_controller.update([observation[2], observation[9]],
                                                    (math.pi / 4) * (observation[0] + observation[7])), -1, 1)
 
-    # Discretizing the input actions y and theta
+    # Pass the discretized actions to action_set
     action_set = np.array([ACTION_X, discretize_actions(action_y), discretize_actions(action_theta)])
 
     # Making a scheme for learning whether the landing was successful or not
@@ -87,7 +85,6 @@ while True:
         # Deciding whether the landing was successful or not
         success = True if largest_reward >= 0.05 else False
         print(f"Simulation is done : {success}.")
-
         break
 
 env.close()

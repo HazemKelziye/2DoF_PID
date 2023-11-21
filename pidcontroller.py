@@ -1,6 +1,6 @@
 class PIDController:
     """This is a parent class for creating PID controllers using this class
-        as a parent, it'll create three degrees-of-freedom PID controller"""
+        as a parent, it'll create two degrees-of-freedom PID controller"""
 
     def __init__(self, kp, ki, kd, setpoint):
         self.kp = kp
