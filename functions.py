@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
+
 def discretize_actions(action, bins_num=6, min_val=-1.0, max_val=1.0):
     """Discretize action into one of the specified bins."""
     intervals = np.linspace(min_val, max_val, bins_num)
