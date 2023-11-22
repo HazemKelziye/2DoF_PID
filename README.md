@@ -12,14 +12,27 @@ point i.e. (0,-1) and if it's not above that point it will tilt the rocket to ma
 the setpoint was {pi/4 * (x + Vx)}. The PIDtheta controller's gain parameters are Kp = 1,000 , Ki = 2.5, Kd = 750.<br>
 
 ## Landing demonstrations:<br>
-![Figure_1](https://github.com/Hazem-Kelziye/2DoF_PID/blob/master/figures/landing_rocket1.png)<br>
-![Figure_2](https://github.com/Hazem-Kelziye/2DoF_PID/blob/master/figures/landing_rocket3.png)<br>
-![Figure_3](https://github.com/Hazem-Kelziye/2DoF_PID/blob/master/figures/landing_rocket2.png)<br>
+<p align="center">
+  <img src="figures/landing_rocket1.png" alt="Figure_1" width="550" height="700">
+</p>
+<p align="center">
+  <img src="figures/landing_rocket3.png" alt="Figure_2" width="550" height="700">
+</p>
+<p align="center">
+  <img src="figures/landing_rocket2.png" alt="Figure_3" width="550" height="700">
+</p>
 
 For clearer demonstrations please refer to this link => https://youtu.be/mLsDPvBsJDQ <br>
 
 
 Here are the responses of the system, for multiple random landing samples;
-![Figure_4](https://github.com/Hazem-Kelziye/2DoF_PID/blob/master/figures/pid_f1.png)<br>
-![Figure_5](https://github.com/Hazem-Kelziye/2DoF_PID/blob/master/figures/pid_f3.png)<br>
-![Figure_6](https://github.com/Hazem-Kelziye/2DoF_PID/blob/master/figures/pid_f5.png)<br>
+<p align="center">
+  <img src="figures/pid_f1.png" alt="Figure_4" width="600" height="400">
+</p>
+<p align="center">
+  <img src="figures/pid_f3.png" alt="Figure_5" width="600" height="400">
+</p>
+<p align="center">
+  <img src="figures/pid_f5.png" alt="Figure_6" width="600" height="400">
+</p>
+
